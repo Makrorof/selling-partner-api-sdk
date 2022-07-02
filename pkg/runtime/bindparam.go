@@ -23,7 +23,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gopkg.me/selling-partner-api-sdk/pkg/types"
+	"gopkg.me/selling-partner-api-sdk-makrorof/pkg/types"
 )
 
 // This function binds a parameter as described in the Path Parameters
