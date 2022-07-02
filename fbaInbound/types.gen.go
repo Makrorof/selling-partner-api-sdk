@@ -1261,6 +1261,17 @@ type GetInboundGuidanceParams struct {
 	ASINList *[]string `json:"ASINList,omitempty"`
 }
 
+// GetItemEligibilityPreviewParams defines parameters for GetItemEligibilityPreview.
+type GetItemEligibilityPreviewParams struct {
+	MarketplaceIds *[]string `json:"marketplaceIds"`
+
+	ASIN string `json:"asin"`
+
+	//INBOUND => Inbound shipment.
+	//COMMINGLING => Using the manufacturer barcode for FBA inventory tracking.
+	Program string `json:"program"`
+}
+
 // CreateInboundShipmentPlanJSONBody defines parameters for CreateInboundShipmentPlan.
 type CreateInboundShipmentPlanJSONBody CreateInboundShipmentPlanRequest
 
@@ -1390,3 +1401,23 @@ type UpdateInboundShipmentJSONRequestBody UpdateInboundShipmentJSONBody
 
 // PutTransportDetailsRequestBody defines body for PutTransportDetails for application/json ContentType.
 type PutTransportDetailsJSONRequestBody PutTransportDetailsJSONBody
+
+
+
+//----------------GetItemEligibilityPreview--------------------------//
+// GetItemEligibilityPreviewResponse defines model for GetItemEligibilityPreviewResponse.
+type GetItemEligibilityPreviewResponse struct {
+	// A list of error responses returned when a request is unsuccessful.
+	Errors  *ErrorList                `json:"errors,omitempty"`
+	Payload *GetInboundGuidanceResult `json:"payload,omitempty"`
+}
+
+
+type GetItemEligibilityPreviewResult struct{
+	Asin 				    *string   `json:"asin,omitempty"`
+	MarketplaceId           *string   `json:"marketplaceId,omitempty"`
+	Program                 *string   `json:"program,omitempty"`
+	IsEligibleForProgram    *bool     `json:"isEligibleForProgram,omitempty"`
+	IneligibilityReasonList *[]string `json:"ineligibilityReasonList,omitempty"`
+}
+//----------------END GetItemEligibilityPreview----------------------//

@@ -127,6 +127,8 @@ type ClientInterface interface {
 	// GetInboundGuidance request
 	GetInboundGuidance(ctx context.Context, params *GetInboundGuidanceParams) (*http.Response, error)
 
+	GetItemEligibilityPreview(ctx context.Context, params *GetItemEligibilityPreviewParams) (*http.Response, error)
+
 	// CreateInboundShipmentPlan request  with any body
 	CreateInboundShipmentPlanWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
 
@@ -186,6 +188,35 @@ type ClientInterface interface {
 
 func (c *Client) GetInboundGuidance(ctx context.Context, params *GetInboundGuidanceParams) (*http.Response, error) {
 	req, err := NewGetInboundGuidanceRequest(c.Endpoint, params)
+	if err != nil {
+		return nil, err
+	}
+
+	req = req.WithContext(ctx)
+	req.Header.Set("User-Agent", c.UserAgent)
+	if c.RequestBefore != nil {
+		err = c.RequestBefore(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	rsp, err := c.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.ResponseAfter != nil {
+		err = c.ResponseAfter(ctx, rsp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return rsp, nil
+}
+
+func (c *Client) GetItemEligibilityPreview(ctx context.Context, params *GetItemEligibilityPreviewParams) (*http.Response, error) {
+	req, err := NewGetItemEligibilityPreviewRequest(c.Endpoint, params)
 	if err != nil {
 		return nil, err
 	}
@@ -801,6 +832,77 @@ func NewGetInboundGuidanceRequest(endpoint string, params *GetInboundGuidancePar
 		}
 
 	}
+
+	queryUrl.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetItemEligibilityPreviewRequest generates requests for GetItemEligibilityPreview
+func NewGetItemEligibilityPreviewRequest(endpoint string, params *GetItemEligibilityPreviewParams) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/fba/inbound/v1/eligibility/itemPreview")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryUrl.Query()
+
+	if params.MarketplaceIds != nil{
+		if queryFrag, err := runtime.StyleParam("form", true, "marketplaceIds", *params.MarketplaceIds); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+	}
+
+	if queryFrag, err := runtime.StyleParam("form", true, "asin", params.ASIN); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	
+	if queryFrag, err := runtime.StyleParam("form", true, "program", params.Program); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
 
 	queryUrl.RawQuery = queryValues.Encode()
 
@@ -1855,6 +1957,28 @@ func (r GetInboundGuidanceResp) StatusCode() int {
 	return 0
 }
 
+type GetItemEligibilityPreviewResp struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	Model        *GetItemEligibilityPreviewResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetItemEligibilityPreviewResp) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetItemEligibilityPreviewResp) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateInboundShipmentPlanResp struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -2216,6 +2340,15 @@ func (c *ClientWithResponses) GetInboundGuidanceWithResponse(ctx context.Context
 	return ParseGetInboundGuidanceResp(rsp)
 }
 
+// GetInboundGuidanceWithResponse request returning *GetInboundGuidanceResponse
+func (c *ClientWithResponses) GetItemEligibilityPreviewWithResponse(ctx context.Context, params *GetItemEligibilityPreviewParams) (*GetItemEligibilityPreviewResp, error) {
+	rsp, err := c.GetItemEligibilityPreview(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetItemEligibilityPreviewResp(rsp)
+}
+
 // CreateInboundShipmentPlanWithBodyWithResponse request with arbitrary body returning *CreateInboundShipmentPlanResponse
 func (c *ClientWithResponses) CreateInboundShipmentPlanWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateInboundShipmentPlanResp, error) {
 	rsp, err := c.CreateInboundShipmentPlanWithBody(ctx, contentType, body)
@@ -2406,6 +2539,33 @@ func ParseGetInboundGuidanceResp(rsp *http.Response) (*GetInboundGuidanceResp, e
 	}
 
 	var dest GetInboundGuidanceResponse
+	if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+		return nil, err
+	}
+
+	response.Model = &dest
+
+	if rsp.StatusCode >= 300 {
+		err = fmt.Errorf(rsp.Status)
+	}
+
+	return response, err
+}
+
+// ParseGetItemEligibilityPreviewResp parses an HTTP response from a GetItemEligibilityPreviewWithResponse call
+func ParseGetItemEligibilityPreviewResp(rsp *http.Response) (*GetItemEligibilityPreviewResp, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetItemEligibilityPreviewResp{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	var dest GetItemEligibilityPreviewResponse
 	if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 		return nil, err
 	}
