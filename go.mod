@@ -1,4 +1,4 @@
-module gopkg.me/selling-partner-api-sdk
+module gopkg.me/selling-partner-api-sdk-makrorof
 
 go 1.16
 
