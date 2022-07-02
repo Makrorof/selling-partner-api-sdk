@@ -1409,7 +1409,7 @@ type PutTransportDetailsJSONRequestBody PutTransportDetailsJSONBody
 type GetItemEligibilityPreviewResponse struct {
 	// A list of error responses returned when a request is unsuccessful.
 	Errors  *ErrorList                `json:"errors,omitempty"`
-	Payload *GetInboundGuidanceResult `json:"payload,omitempty"`
+	Payload *GetItemEligibilityPreviewResult `json:"payload,omitempty"`
 }
 
 
