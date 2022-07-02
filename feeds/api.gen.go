@@ -15,7 +15,7 @@ import (
 	runt "runtime"
 	"strings"
 
-	"gopkg.me/selling-partner-api-sdk-makrorof/pkg/runtime"
+	"github.com/Makrorof/selling-partner-api-sdk-makrorof/pkg/runtime"
 )
 
 // RequestBeforeFn  is the function signature for the RequestBefore callback function

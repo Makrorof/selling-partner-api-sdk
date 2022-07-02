@@ -12,7 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"gopkg.me/selling-partner-api-sdk-makrorof/pkg/types"
+	"github.com/Makrorof/selling-partner-api-sdk-makrorof/pkg/types"
 )
 
 func marshalDeepObject(in interface{}, path []string) ([]string, error) {

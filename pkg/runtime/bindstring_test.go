@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"gopkg.me/selling-partner-api-sdk-makrorof/pkg/types"
+	"github.com/Makrorof/selling-partner-api-sdk-makrorof/pkg/types"
 )
 
 func TestBindStringToObject(t *testing.T) {
